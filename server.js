@@ -1,3 +1,4 @@
+const express = require('express');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 
@@ -21,10 +22,6 @@ const db = mysql.createConnection(
   console.log(`Connected to the company_db database.`)
 );
 
-db.query('SELECT * FROM favorite_books', function (err, results) {
-  console.log(results);
-});
-
 function init() {
   inquirer
   .prompt([
@@ -35,7 +32,20 @@ function init() {
         choices: ['View all departments', 'View all roles', 'View all employees','Add a department', `Add a role`, `Add an employee`, `Update an employee role` ]
       }
   ]).then((data) => {
-      console.log(`choice selected!`)
+    switch(data.selection) {
+      case `View all departments`:
+        db.query('SELECT * FROM department', function (err, results) {
+          console.log(results);
+        });
+        break;
+      case `View all roles`:
+        db.query('SELECT * FROM employee', function (err, results) {
+        console.log(results);
+      });
+      break;
+      default:
+        console.log(`choice selected!`)
+    }  
     });
 };
 
