@@ -1,28 +1,13 @@
 const express = require('express');
 const inquirer = require('inquirer');
-const mysql = require('mysql2');
 const cTable = require('console.table');
+const db = require(`./db`);
 
+function init () {
+  loadQuestions();
+}
 
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-// Connect to database
-const db = mysql.createConnection(
-  {
-    host: 'localhost',
-    user: 'root',
-    password: 'aviation',
-    database: 'company_db'
-  },
-  console.log(`Connected to the company_db database.`)
-);
-
-function init() {
+function loadQuestions() {
   inquirer
   .prompt([
       {
@@ -34,38 +19,97 @@ function init() {
   ]).then((data) => {
     switch(data.selection) {
       case `View all departments`:
-        db.query('SELECT * FROM department', function (err, results) {
-          console.table(results);
-        });
+        viewDept();
         break;
       case `View all roles`:
-        db.query('SELECT * FROM role', function (err, results) {
-        console.table(results);
-      });
+        viewRole();
+        break;
+      case `View all employees`:
+        viewEmployees(); 
+        break;
       case `Add a department`:
-        inquirer.prompt([
-          {
-            type: 'input',
-            message: 'What department would you like to add?',
-            name: 'newDept'
-          }
-        ]).then((choice) => {
-          db.query(`INSERT INTO department (name) VALUES (?)`, choice.newDept, function (err, results) {
-            if (err) {
-              console.log(err);
-            }
-            console.log(`dept added!`);
-        });
-      });
-      break;
-      default:
+        addDepartment()
+        break;
+      // case `Add a role`:
+      //   inquirer.prompt([
+      //     {
+      //       type: 'input',
+      //       message: 'What is the title of the role?',
+      //       title: 'title'
+      //     },
+      //     {
+      //       type: 'input',
+      //       message: 'What is their salary?',
+      //       salary: 'salary'
+      //     },
+      //     {
+      //       type: 'list',
+      //       message: 'What is their department?',
+      //       department: 'newDept'
+      //     }
+      //   ]).then((choice) => {
+      //     db.query(`INSERT INTO employee (title, salary, department) VALUES (?)`, choice.newDept, function (err, results) {
+      //       if (err) {
+      //         console.log(err);
+      //       }
+      //       console.log(`dept added!`);
+      //   });
+      // });
+      // break;
+      
+  
+      // default:
         console.log(`choice selected!`)
     }  
     });
 };
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+
+function viewDept() {
+  db.viewAllDept()
+    .then(([data])=> {
+      console.log(`\n`);
+      console.table(data);
+  })
+    .then(()=>loadQuestions())
+};
+
+function viewRole() {
+  db.viewRoles()
+  .then(([data])=> {
+    console.log(`\n`);
+    console.table(data);
+})
+  .then(()=>loadQuestions())
+};
+
+function viewEmployees() {
+  db.viewEmployees()
+    .then(([data])=> {
+      console.log(`\n`);
+      console.table(data);
+  })
+    .then(()=>loadQuestions())
+};
+
+function addDepartment() {
+  inquirer.prompt([
+    {
+      type: 'input',
+      message: 'What department would you like to add?',
+      name: 'newDept'
+    }
+  ]).then((choice) => {
+    db.addDept(choice.newDept)
+    .then(([data])=> {
+      console.log(`\n`);
+      console.log(`${choice.newDept} added!`);
+      console.table(data);
+  })
+  .then(()=>loadQuestions())
+})}
+
 
 init()
+
+module.exports = db;
