@@ -30,6 +30,12 @@ function loadQuestions() {
       case `Add a department`:
         addDepartment()
         break;
+      case `Add a role`:
+        addRole()
+        break;
+      case `Add an employee`:
+          addEmployee()
+          break;
       // case `Add a role`:
       //   inquirer.prompt([
       //     {
@@ -103,11 +109,84 @@ function addDepartment() {
     db.addDept(choice.newDept)
     .then(([data])=> {
       console.log(`\n`);
-      console.log(`${choice.newDept} added!`);
+      console.log(`${choice.newDept} department added!`);
       console.table(data);
   })
   .then(()=>loadQuestions())
 })}
+
+
+function addRole() {
+  db.viewAllDept()
+  .then(([data]) => {
+    const allDept = data.map(({id, name}) => ({
+      id: `${id}`,
+      name: `${name}`
+    }))
+
+  inquirer.prompt([
+    {
+      type: 'input',
+      message: 'What role would you like to add?',
+      name: 'newRole'
+    },
+    {
+      type: 'input',
+      message: 'What salary is this role?',
+      name: 'newSalary'
+    },
+    {
+      type: 'input',
+      message: 'What department id is this role in?',
+      name: 'newDepartment',
+      //swap out if wanting to find manager
+    }])
+    .then((choice) => {
+    db.addRole(choice.newRole, choice.newSalary, choice.newDepartment)})
+  .then(()=>
+  loadQuestions())
+})
+};
+
+function addEmployee() {
+  inquirer.prompt([
+    {
+      type: 'input',
+      message: 'Enter first name',
+      name: 'firstName'
+    },
+    {
+      type: 'input',
+      message: 'Enter last name',
+      name: 'lastName'
+    },
+    {
+      type: 'input',
+      message: 'Enter role id',
+      name: 'roleID'
+    },
+    {
+      type: 'input',
+      message: 'Enter manager id',
+      name: 'managerID'
+    }
+  ]).then((choice) => {
+    db.addEmployee(choice.firstName, choice.lastName, choice.roleID, choice.managerID)
+    .then(([data])=> {
+      console.log(`\n`);
+      console.log(`${choice.firstName} ${choice.lastName} added!`);
+      console.table(data);
+  })
+  .then(()=>loadQuestions())
+})}
+
+function updateEmployee() {
+  db.viewAllDept()
+  .then(([data]) => {
+    const allDept = data.map(({id, name}) => ({
+      id: `${id}`,
+      name: `${name}`
+    }))
 
 
 init()
