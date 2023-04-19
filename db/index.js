@@ -22,6 +22,11 @@ class DB {
         JOIN department ON role.department = department.id`);
     }
 
+    viewEmployeeNames() {
+        return this.connection.promise().query(`SELECT employee.first_name, employee.last_name
+        FROM company_db.employee`);
+    }
+
     addDept(name) {
         this.connection.promise().query(`INSERT INTO department (name) VALUES (?)`, name);
         return this.connection.promise().query('SELECT * FROM department');
@@ -35,6 +40,14 @@ class DB {
 
     addEmployee(firstName, lastName, roleID, managerID) {
         this.connection.promise().query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${firstName}", "${lastName}", ${roleID}, ${managerID})`);
+        return this.connection.promise().query('SELECT * FROM employee');
+    }
+
+    updateEmployee(id, role_id) {
+        this.connection.promise().query(`UPDATE employee SET role_id = ${role_id}
+        WHERE id = ${id}`);
+        console.log(id)
+        console.log(role_id)
         return this.connection.promise().query('SELECT * FROM employee');
     }
 

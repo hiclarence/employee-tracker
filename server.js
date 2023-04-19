@@ -36,36 +36,9 @@ function loadQuestions() {
       case `Add an employee`:
           addEmployee()
           break;
-      // case `Add a role`:
-      //   inquirer.prompt([
-      //     {
-      //       type: 'input',
-      //       message: 'What is the title of the role?',
-      //       title: 'title'
-      //     },
-      //     {
-      //       type: 'input',
-      //       message: 'What is their salary?',
-      //       salary: 'salary'
-      //     },
-      //     {
-      //       type: 'list',
-      //       message: 'What is their department?',
-      //       department: 'newDept'
-      //     }
-      //   ]).then((choice) => {
-      //     db.query(`INSERT INTO employee (title, salary, department) VALUES (?)`, choice.newDept, function (err, results) {
-      //       if (err) {
-      //         console.log(err);
-      //       }
-      //       console.log(`dept added!`);
-      //   });
-      // });
-      // break;
-      
-  
-      // default:
-        console.log(`choice selected!`)
+      case `Update an employee role`:
+        updateEmployee()
+        break;
     }  
     });
 };
@@ -115,7 +88,6 @@ function addDepartment() {
   .then(()=>loadQuestions())
 })}
 
-
 function addRole() {
   db.viewAllDept()
   .then(([data]) => {
@@ -139,16 +111,20 @@ function addRole() {
       type: 'input',
       message: 'What department id is this role in?',
       name: 'newDepartment',
-      //swap out if wanting to find manager
     }])
     .then((choice) => {
     db.addRole(choice.newRole, choice.newSalary, choice.newDepartment)})
-  .then(()=>
-  loadQuestions())
+  .then(()=>loadQuestions())
 })
 };
 
 function addEmployee() {
+  db.viewAllDept()
+  .then(([data]) => {
+    const allDept = data.map(({id, name}) => ({
+      id: `${id}`,
+      name: `${name}`
+    }))
   inquirer.prompt([
     {
       type: 'input',
@@ -179,14 +155,38 @@ function addEmployee() {
   })
   .then(()=>loadQuestions())
 })}
+)}
 
 function updateEmployee() {
-  db.viewAllDept()
+  db.viewEmployees()
   .then(([data]) => {
-    const allDept = data.map(({id, name}) => ({
-      id: `${id}`,
-      name: `${name}`
+    const allEmployees = data.map(({id, first_name, last_name}) => ({
+      name: `${first_name} ${last_name}`,
+      value: id
     }))
+    inquirer.prompt([
+      {
+        type: 'list',
+        message: 'Choose your employee',
+        name: 'employeeId',
+        choices: allEmployees
+      },
+      {
+        type: 'input',
+        message: 'What is their new role id?',
+        name: 'roleId'
+      }
+    ])
+    .then((choice) => {
+      db.updateEmployee(choice.employeeId, choice.roleId)
+      .then(([data])=> {
+        console.log(`\n`);
+        console.log(`Employee added!`);
+        console.table(data);
+    })
+    .then(()=>loadQuestions())
+  })}
+  )}
 
 
 init()
